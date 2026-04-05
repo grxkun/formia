@@ -18,7 +18,38 @@
 
 ---
 
-**forma.css** — Layout primitives, design tokens, fluid type scale, motion utilities.  
+## The Problem
+
+Every vibecoded site looks the same. Not because AI is bad at code — because AI has no taste.
+
+Ask any AI to build a landing page and you get this, every time:
+
+```
+Purple gradient hero → Inter font → centered H1 → two equal CTAs
+Three icon cards → testimonials → pricing table → footer
+```
+
+It's not wrong. It's just invisible. And invisible is worse than wrong.
+
+**The vibecoder pain points:**
+
+| What you get | What you wanted |
+|---|---|
+| `Inter` + violet gradient | A typeface with a point of view |
+| `scale(1.05)` on hover | Motion that means something |
+| Three equal-weight columns | Hierarchy that guides the eye |
+| Screenshot placed on background | Product living inside the scene |
+| One layout, every project | A perspective that's yours |
+
+The top 1% of sites share one trait: **a single signature element** the rest don't have. A typeface pushed to 18vw. A product card that floats. A section that wipes in with clip-path. A background that reacts to the cursor.
+
+None of that is hard to build. It's just never in the prompt.
+
+**Formia encodes those decisions.** 11 design systems, each with its own typeface, palette, and motion signature. Drop one in and your site immediately reads like someone made a choice — because someone did.
+
+---
+
+**formia.css** — Layout primitives, design tokens, fluid type scale, motion utilities.  
 **formia.js** — Everything else: scroll reveals, parallax, magnetic, cursor, counters, split text, 11 themes, accent system, dark/light mode, viewport preview, GSAP choreography, Three.js hero scene, PWA manager.
 
 No build step. Zero config.
@@ -34,7 +65,7 @@ npm install formia
 Or drop files directly into your project:
 
 ```html
-<link rel="stylesheet" href="forma.css">
+<link rel="stylesheet" href="formia.css">
 
 <!-- Motion only (no GSAP/Three.js needed) -->
 <script src="formia.js" defer></script>
@@ -48,7 +79,7 @@ Or drop files directly into your project:
 
 ---
 
-## forma.css — Design Tokens
+## formia.css — Design Tokens
 
 Override the tokens in your project:
 
@@ -177,7 +208,7 @@ Press **T** to toggle the studio panel from any page.
 
 | File | Size | Purpose |
 |------|------|---------|
-| `forma.css` | ~8KB | Design tokens + layout primitives |
+| `formia.css` | ~8KB | Design tokens + layout primitives |
 | `formia.js` | ~15KB | Design engine + motion layer (one file) |
 
 ---

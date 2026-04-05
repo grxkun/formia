@@ -1,6 +1,22 @@
-# Formia
+<div align="center">
 
-> A design-system-first micro-framework. Drop in and build differently.
+<img src="https://raw.githubusercontent.com/grxkun/formia/main/banner.svg" alt="Formia" width="100%">
+
+<br/>
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-8fe05e?style=flat-square)](LICENSE)
+[![Version](https://img.shields.io/badge/version-1.0.0-8fe05e?style=flat-square)](package.json)
+[![No build step](https://img.shields.io/badge/build%20step-none-8fe05e?style=flat-square)](#)
+[![Zero dependencies](https://img.shields.io/badge/dependencies-zero-8fe05e?style=flat-square)](#)
+[![GitHub Pages](https://img.shields.io/badge/demo-live-8fe05e?style=flat-square)](https://grxkun.github.io/formia/)
+
+<br/>
+
+**One file. Design engine + motion layer. Build differently.**
+
+</div>
+
+---
 
 **forma.css** — Layout primitives, design tokens, fluid type scale, motion utilities.  
 **formia.js** — Everything else: scroll reveals, parallax, magnetic, cursor, counters, split text, 11 themes, accent system, dark/light mode, viewport preview, GSAP choreography, Three.js hero scene, PWA manager.

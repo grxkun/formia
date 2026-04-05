@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FORMA — Design-System-First Micro-Framework</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&display=swap" rel="stylesheet">
+  <style>
+/* ===== FORMA.css (inline) ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+img, video, svg { display: block; max-width: 100%; }
+
+:root {
+  --bg:      #08090a;
+  --fg:      #ededeb;
+  --accent:  #d4a04a;
+  --accent2: #4ab8d4;
+  --muted:   rgba(237,237,235,0.38);
+  --surface: rgba(237,237,235,0.04);
+  --border:  rgba(237,237,235,0.07);
+  --text-xs:   clamp(0.64rem, 0.6vw + 0.5rem, 0.75rem);
+  --text-sm:   clamp(0.8rem, 0.8vw + 0.6rem, 0.9rem);
+  --text-base: clamp(1rem, 0.5vw + 0.85rem, 1.125rem);
+  --text-lg:   clamp(1.125rem, 1vw + 0.9rem, 1.375rem);
+  --text-xl:   clamp(1.375rem, 2vw + 1rem, 2rem);
+  --text-2xl:  clamp(1.75rem, 3vw + 1rem, 3rem);
+  --text-3xl:  clamp(2.5rem, 5vw + 1rem, 5rem);
+  --text-4xl:  clamp(3.5rem, 8vw + 1rem, 9rem);
+  --text-hero: clamp(5rem, 14vw, 18rem);
+  --space-4: 16px; --space-5: 24px; --space-6: 32px;
+  --space-7: 48px; --space-8: 64px; --space-9: 96px;
+  --section-y: clamp(80px, 12vw, 160px);
+  --content-x: clamp(24px, 5vw, 80px);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --radius-full: 9999px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Syne', sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Layout primitives */
+.stack { display: flex; flex-direction: column; }
+.stack > * + * { margin-top: var(--stack-gap, var(--space-5)); }
+.cluster { display: flex; flex-wrap: wrap; gap: var(--cluster-gap, var(--space-4)); align-items: center; }
+.grid { display: grid; gap: var(--grid-gap, 24px); }
+.content { width: min(1200px, 100%); margin-inline: auto; padding-inline: var(--content-x); }
+.section { padding-block: var(--section-y); }
+.cover { display: grid; place-items: center; min-height: 100svh; }
+
+/* Type */
+.label { font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.kicker {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 14px; border: 1px solid var(--border); border-radius: var(--radius-full);
+  font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent);
+}
+.text-muted { color: var(--muted); }
+.text-accent { color: var(--accent); }
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--fg) 70%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 28px; border-radius: var(--radius-full); border: none;
+  font-family: inherit; font-size: var(--text-sm); font-weight: 600;
+  letter-spacing: 0.02em; cursor: pointer; text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-primary { background: var(--accent); color: #08090a; }
+.btn-primary:hover { box-shadow: 0 8px 32px color-mix(in srgb, var(--accent) 35%, transparent); }
+.btn-ghost { background: transparent; color: var(--fg); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--fg); background: var(--surface); }
+
+/* Card */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: var(--space-7);
+  transition: transform 0.3s var(--ease-spring), border-color 0.3s ease;
+}
+.card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+
+/* Reveal */
+[data-reveal] {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+}
+[data-reveal="left"]  { transform: translateX(-28px); }
+[data-reveal="right"] { transform: translateX(28px); }
+[data-reveal="scale"] { transform: scale(0.94) translateY(12px); }
+[data-reveal].revealed { opacity: 1; transform: none; }
+
+[data-stagger] > * {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+  transition-delay: var(--stagger-delay, 0ms);
+}
+[data-stagger].revealed > * { opacity: 1; transform: none; }
+
+/* Noise */
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.035; mix-blend-mode: overlay;
+}
+
+/* Marquee */
+.marquee { overflow: hidden; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 18px 0; }
+.marquee-track { display: flex; gap: 64px; white-space: nowrap; animation: marquee-scroll 22s linear infinite; }
+@keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* Cursor */
+.cursor {
+  position: fixed; top: 0; left: 0; width: 10px; height: 10px;
+  background: var(--accent); border-radius: 50%;
+  pointer-events: none; z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.35s var(--ease-spring), height 0.35s var(--ease-spring);
+  mix-blend-mode: difference;
+}
+.cursor.hover { width: 44px; height: 44px; }
+
+/* Progress */
+#progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); transform-origin: left; transform: scaleX(0); z-index: 1000; }
+
+/* Number counter */
+.stat-label { font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+.stat-value { font-size: clamp(2.5rem, 5vw, 5rem); font-weight: 700; line-height: 1; color: var(--fg); }
+
+/* Divider line */
+.divider { width: 100%; height: 1px; background: var(--border); }
+
+/* Section number */
+.section-num {
+  font-size: var(--text-xs); letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center; gap: 12px;
+}
+.section-num::before { content: ''; display: block; width: 28px; height: 1px; background: currentColor; }
+
+/* Gradient mesh bg */
+.mesh-bg {
+  background:
+    radial-gradient(ellipse at 15% 50%, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 20%, color-mix(in srgb, var(--accent2) 8%, transparent) 0%, transparent 50%),
+    var(--bg);
+}
+
+/* ===== Bespoke styles ===== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 20px var(--content-x);
+  display: flex; justify-content: space-between; align-items: center;
+}
+nav::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.hero-display {
+  font-family: 'Fraunces', serif;
+  font-size: var(--text-hero);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+}
+
+.hero-display em {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--accent), #f0c87a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.feature-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+
+.code-chip {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 3px 10px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.8em; color: var(--accent);
+}
+
+.tag-line-wrapper {
+  overflow: hidden;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.about-cell {
+  padding: var(--space-7);
+  border: 1px solid var(--border);
+}
+@media (max-width: 640px) { .about-grid { grid-template-columns: 1fr; } }
+
+.big-quote {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(1.6rem, 3.5vw, 3.5rem);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.ticker-item { display: flex; align-items: center; gap: 20px; color: var(--muted); font-size: var(--text-sm); }
+.ticker-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+.cta-section {
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  border-top: 1px solid var(--border);
+}
+  </style>
+</head>
+<body data-cursor class="mesh-bg">
+
+<!-- Progress bar -->
+<div id="progress"></div>
+
+<!-- Cursor -->
+<div class="cursor" id="cursor"></div>
+
+<!-- Nav -->
+<nav>
+  <div style="position:relative;z-index:1;display:flex;align-items:center;gap:10px;">
+    <div style="width:28px;height:28px;background:var(--accent);border-radius:6px;"></div>
+    <span style="font-weight:700;letter-spacing:-0.01em;">FORMA</span>
+  </div>
+  <div style="position:relative;z-index:1;display:flex;gap:12px;align-items:center;">
+    <a href="#why" class="btn btn-ghost" style="padding:8px 20px;">Why</a>
+    <a href="#features" class="btn btn-ghost" style="padding:8px 20px;">Features</a>
+    <a href="#demo" class="btn btn-primary">Get FORMA</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="cover section" style="padding-top:120px;min-height:100svh;">
+  <div class="content">
+    <div class="stack" style="--stack-gap:32px;max-width:900px;">
+      <div data-reveal>
+        <span class="kicker">v1.0 — Design-System-First</span>
+      </div>
+      <h1 class="hero-display" data-reveal data-delay="80">
+        Build sites that look<br><em>different.</em>
+      </h1>
+      <p style="font-size:var(--text-lg);color:var(--muted);max-width:52ch;line-height:1.55;" data-reveal data-delay="160">
+        FORMA is the micro-framework that replaces Tailwind utility soup with 
+        composition-first layouts and motion-first JS. No build step. Drop in and go.
+      </p>
+      <div class="cluster" data-reveal data-delay="240">
+        <a href="#features" class="btn btn-primary">Explore features</a>
+        <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:var(--text-sm);">
+          <span class="code-chip">forma.css</span>
+          <span>+</span>
+          <span class="code-chip">forma.js</span>
+          <span>= ~8KB</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating code badge -->
+    <div data-reveal="right" style="position:absolute;right:var(--content-x);top:50%;transform:translateY(-50%);
+      background:var(--surface);border:1px solid var(--border);border-radius:12px;
+      padding:20px 24px;font-family:monospace;font-size:0.78rem;
+      line-height:1.8;color:var(--muted);max-width:280px;
+      display:none;" id="code-badge">
+      <div style="color:var(--muted);margin-bottom:8px;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;">HTML</div>
+      <div><span style="color:#888;">&lt;</span><span style="color:var(--accent2);">div</span> <span style="color:var(--accent);">data-reveal</span><span style="color:#888;">&gt;</span></div>
+      <div>&nbsp;&nbsp;<span style="color:#888;">&lt;</span><span style="color:var(--accent2);">h1</span> <span style="color:var(--accent);">data-split-text</span><span style="color:#888;">&gt;</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;Hello world</div>
+      <div>&nbsp;&nbsp;<span style="color:#888;">&lt;/</span><span style="color:var(--accent2);">h1</span><span style="color:#888;">&gt;</span></div>
+      <div><span style="color:#888;">&lt;/</span><span style="color:var(--accent2);">div</span><span style="color:#888;">&gt;</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Marquee -->
+<div class="marquee">
+  <div class="marquee-track" id="marquee-track">
+    <span class="ticker-item"><span class="ticker-dot"></span> Scroll reveals</span>
+    <span class="ticker-item"><span class="ticker-dot"></span> Magnetic hover</span>
+    <span class="ticker-item"><span class="ticker-dot"></span> Custom cursor</span>
+    <span class="ticker-item"><span class="ticker-dot"></span> Parallax depth</span>
+    <span class="ticker-item"><span class="ticker-dot"></span> Split text</span>
+    <span class="ticker-item"><span class="ticker-dot"></span> Number counters</span>
+    <span class="ticker-item"><span class="ticker-dot"></span> Design tokens</span>
+    <span class="ticker-item"><span class="ticker-dot"></span> Fluid typography</span>
+    <span class="ticker-item"><span class="ticker-dot"></span> Layout primitives</span>
+    <span class="ticker-item"><span class="ticker-dot"></span> Zero build step</span>
+    <span class="ticker-item"><span class="ticker-dot"></span> 8KB total</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<section class="section" id="why">
+  <div class="content">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+      <div style="background:var(--bg);padding:40px 32px;" data-stagger>
+        <div class="stat-value" data-counter data-value="99" data-suffix="%">99%</div>
+        <div class="stat-label">of AI sites look the same</div>
+      </div>
+      <div style="background:var(--bg);padding:40px 32px;" data-stagger>
+        <div class="stat-value" data-counter data-value="8" data-suffix="KB">8KB</div>
+        <div class="stat-label">total framework size</div>
+      </div>
+      <div style="background:var(--bg);padding:40px 32px;" data-stagger>
+        <div class="stat-value" data-counter data-value="0">0</div>
+        <div class="stat-label">build steps required</div>
+      </div>
+      <div style="background:var(--bg);padding:40px 32px;" data-stagger>
+        <div class="stat-value" data-counter data-value="10" data-suffix="+">10+</div>
+        <div class="stat-label">motion primitives included</div>
+      </div>
+    </div>
+
+    <div style="margin-top:var(--space-9);" class="stack" style="--stack-gap:24px;">
+      <p class="big-quote" data-reveal>
+        "99% of vibecoded sites look the same. The problem isn't the vibe —<br>
+        it's the <em>lack of design knowledge</em> baked into the tools."
+      </p>
+      <p style="color:var(--muted);font-size:var(--text-sm);" data-reveal data-delay="100">— What FORMA is built to fix</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="content">
+    <div class="stack" style="--stack-gap:64px;">
+      <div class="stack" style="--stack-gap:16px;">
+        <span class="section-num" data-reveal>01</span>
+        <h2 style="font-family:'Fraunces',serif;font-size:var(--text-3xl);line-height:1.05;letter-spacing:-0.02em;font-weight:700;" data-reveal>
+          Layout primitives.<br>Not utility soup.
+        </h2>
+        <p style="color:var(--muted);max-width:52ch;" data-reveal data-delay="80">
+          Tailwind gives you thousands of atomic classes. FORMA gives you the 12 layout patterns
+          that actually cover 95% of real sites — designed to compose, not conflict.
+        </p>
+      </div>
+
+      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));" data-stagger>
+        <div class="card">
+          <div class="feature-icon">⏸</div>
+          <div class="stack" style="--stack-gap:8px;margin-top:20px;">
+            <div style="font-weight:700;font-size:var(--text-lg);">.stack</div>
+            <div style="color:var(--muted);font-size:var(--text-sm);">Vertical rhythm via gap, not margin. The foundation of every layout.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="feature-icon">↔</div>
+          <div class="stack" style="--stack-gap:8px;margin-top:20px;">
+            <div style="font-weight:700;font-size:var(--text-lg);">.cluster</div>
+            <div style="color:var(--muted);font-size:var(--text-sm);">Inline grouping that wraps. Nav links, tag lists, button groups.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="feature-icon">▦</div>
+          <div class="stack" style="--stack-gap:8px;margin-top:20px;">
+            <div style="font-weight:700;font-size:var(--text-lg);">.grid</div>
+            <div style="color:var(--muted);font-size:var(--text-sm);">Responsive CSS grid with data-cols. No breakpoint arithmetic.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="feature-icon">◫</div>
+          <div class="stack" style="--stack-gap:8px;margin-top:20px;">
+            <div style="font-weight:700;font-size:var(--text-lg);">.sidebar</div>
+            <div style="color:var(--muted);font-size:var(--text-sm);">Asymmetric two-column. Collapses to one column on mobile.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="feature-icon">⊞</div>
+          <div class="stack" style="--stack-gap:8px;margin-top:20px;">
+            <div style="font-weight:700;font-size:var(--text-lg);">.cover</div>
+            <div style="color:var(--muted);font-size:var(--text-sm);">Full-viewport hero sections. The place-items:center hero that just works.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="feature-icon">⬚</div>
+          <div class="stack" style="--stack-gap:8px;margin-top:20px;">
+            <div style="font-weight:700;font-size:var(--text-lg);">.frame</div>
+            <div style="color:var(--muted);font-size:var(--text-sm);">Aspect-ratio containers for images and video. Always perfect ratio.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stack" style="--stack-gap:16px;">
+        <span class="section-num" data-reveal>02</span>
+        <h2 style="font-family:'Fraunces',serif;font-size:var(--text-3xl);line-height:1.05;letter-spacing:-0.02em;font-weight:700;" data-reveal>
+          Motion that means something.
+        </h2>
+        <p style="color:var(--muted);max-width:52ch;" data-reveal data-delay="80">
+          Eight motion primitives via data attributes. No JavaScript required from you.
+          Add <span class="code-chip">data-reveal</span> to any element and it animates on scroll.
+        </p>
+      </div>
+
+      <div class="about-grid" data-reveal="scale">
+        <div class="about-cell">
+          <div class="label" style="margin-bottom:12px;">Attribute</div>
+          <div class="stack" style="--stack-gap:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="code-chip">data-reveal</span>
+              <span style="color:var(--muted);font-size:var(--text-sm);">fade + slide up</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="code-chip">data-reveal="left"</span>
+              <span style="color:var(--muted);font-size:var(--text-sm);">slide from left</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="code-chip">data-reveal="clip"</span>
+              <span style="color:var(--muted);font-size:var(--text-sm);">clip-path wipe</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="code-chip">data-stagger</span>
+              <span style="color:var(--muted);font-size:var(--text-sm);">stagger children</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="code-chip">data-parallax="0.3"</span>
+              <span style="color:var(--muted);font-size:var(--text-sm);">scroll depth</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="code-chip">data-magnetic</span>
+              <span style="color:var(--muted);font-size:var(--text-sm);">cursor attraction</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="code-chip">data-split-text</span>
+              <span style="color:var(--muted);font-size:var(--text-sm);">word-by-word reveal</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="code-chip">data-counter</span>
+              <span style="color:var(--muted);font-size:var(--text-sm);">number animation</span>
+            </div>
+          </div>
+        </div>
+        <div class="about-cell" style="display:flex;align-items:center;justify-content:center;text-align:center;">
+          <div class="stack" style="--stack-gap:20px;align-items:center;">
+            <div style="font-size:3rem;">↑</div>
+            <p style="color:var(--muted);font-size:var(--text-sm);max-width:28ch;">
+              IntersectionObserver powers all reveals. No scroll listeners. No layout thrash. Smooth on 60fps.
+            </p>
+            <a href="#" class="btn btn-ghost" data-magnetic>Try it live</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<section class="section cta-section" id="demo">
+  <div class="content text-center" style="text-align:center;">
+    <div class="stack" style="--stack-gap:32px;align-items:center;">
+      <span class="kicker" data-reveal>Ready to build differently</span>
+      <h2 style="font-family:'Fraunces',serif;font-size:var(--text-3xl);line-height:1.05;letter-spacing:-0.02em;font-weight:700;max-width:14ch;text-align:center;" data-reveal>
+        Your next site should look like <em>yours.</em>
+      </h2>
+      <p style="color:var(--muted);max-width:46ch;text-align:center;" data-reveal data-delay="80">
+        Copy forma.css and forma.js into your project. Override the CSS variables.
+        Add data attributes. Ship something worth screenshotting.
+      </p>
+      <div class="cluster" data-reveal data-delay="160">
+        <a href="#" class="btn btn-primary" data-magnetic>Download FORMA</a>
+        <a href="#features" class="btn btn-ghost">Read the docs</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer style="padding:32px var(--content-x);border-top:1px solid var(--border);">
+  <div class="cluster" style="justify-content:space-between;">
+    <span style="color:var(--muted);font-size:var(--text-xs);">FORMA v1.0 — Design-system-first micro-framework</span>
+    <span style="color:var(--muted);font-size:var(--text-xs);">Made with Claude + Skill v2</span>
+  </div>
+</footer>
+
+<script>
+/* ===== FORMA.js (inline) ===== */
+(function() {
+  'use strict';
+  const CONFIG = {
+    revealThreshold: 0.12,
+    revealRootMargin: '0px 0px -40px 0px',
+    staggerDelay: 90,
+    magneticRadius: 100,
+    magneticStrength: 0.3,
+    counterDuration: 2000,
+    cursorLag: 0.12,
+  };
+
+  const qsa = (s, el = document) => [...el.querySelectorAll(s)];
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
+
+  // Reveal
+  function initReveal() {
+    const els = qsa('[data-reveal], [data-stagger]');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        if (el.hasAttribute('data-stagger')) {
+          [...el.children].forEach((c, i) => c.style.setProperty('--stagger-delay', `${i * CONFIG.staggerDelay}ms`));
+          requestAnimationFrame(() => el.classList.add('revealed'));
+        } else {
+          const delay = parseInt(el.dataset.delay || 0);
+          setTimeout(() => el.classList.add('revealed'), delay);
+        }
+        obs.unobserve(el);
+      });
+    }, { threshold: CONFIG.revealThreshold, rootMargin: CONFIG.revealRootMargin });
+    els.forEach(el => obs.observe(el));
+  }
+
+  // Parallax
+  function initParallax() {
+    const els = qsa('[data-parallax]');
+    if (!els.length) return;
+    window.addEventListener('scroll', () => {
+      els.forEach(el => {
+        const speed = parseFloat(el.dataset.parallax) || 0.3;
+        const rect = el.getBoundingClientRect();
+        const offset = (rect.top + rect.height / 2 - window.innerHeight / 2) * speed * 0.4;
+        el.style.transform = `translateY(${offset}px)`;
+      });
+    }, { passive: true });
+  }
+
+  // Magnetic
+  function initMagnetic() {
+    qsa('[data-magnetic]').forEach(el => {
+      el.style.transition = `transform 0.4s cubic-bezier(0.34,1.56,0.64,1)`;
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top + r.height / 2);
+        const dist = Math.hypot(dx, dy);
+        if (dist < CONFIG.magneticRadius) {
+          const s = (1 - dist / CONFIG.magneticRadius) * CONFIG.magneticStrength;
+          el.style.transform = `translate(${dx*s}px,${dy*s}px)`;
+        }
+      });
+      el.addEventListener('mouseleave', () => el.style.transform = '');
+    });
+  }
+
+  // Cursor
+  let mouse = {x:0,y:0}, cPos = {x:0,y:0};
+  function initCursor() {
+    if (window.matchMedia('(pointer:coarse)').matches) return;
+    const cur = document.getElementById('cursor');
+    if (!cur) return;
+    document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    qsa('a, button, [data-magnetic]').forEach(el => {
+      el.addEventListener('mouseenter', () => cur.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cur.classList.remove('hover'));
+    });
+    (function loop() {
+      cPos.x = lerp(cPos.x, mouse.x, 0.18);
+      cPos.y = lerp(cPos.y, mouse.y, 0.18);
+      cur.style.left = cPos.x + 'px';
+      cur.style.top  = cPos.y + 'px';
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  // Counter
+  function initCounters() {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = parseFloat(el.dataset.value || el.textContent);
+        const suffix = el.dataset.suffix || '';
+        const prefix = el.dataset.prefix || '';
+        const dec = parseInt(el.dataset.decimals || 0);
+        const start = performance.now();
+        function update(now) {
+          const p = clamp((now - start) / CONFIG.counterDuration, 0, 1);
+          const e = 1 - Math.pow(1 - p, 3);
+          el.textContent = prefix + (target * e).toFixed(dec) + suffix;
+          if (p < 1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    qsa('[data-counter]').forEach(el => obs.observe(el));
+  }
+
+  // Split text
+  function initSplitText() {
+    qsa('[data-split-text]').forEach(el => {
+      const words = el.textContent.trim().split(/\s+/);
+      el.innerHTML = words.map(w =>
+        `<span style="display:inline-block;overflow:hidden;vertical-align:bottom;"><span class="sw" style="display:inline-block;transform:translateY(110%);transition:transform 0.75s cubic-bezier(0.16,1,0.3,1);">${w}</span></span>`
+      ).join(' ');
+      const obs2 = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          [...el.querySelectorAll('.sw')].forEach((s,i) => setTimeout(() => s.style.transform='translateY(0)', i*65));
+          obs2.unobserve(el);
+        });
+      }, { threshold: 0.3 });
+      obs2.observe(el);
+    });
+  }
+
+  // Marquee clone
+  function initMarquee() {
+    qsa('.marquee-track').forEach(track => {
+      track.parentElement.appendChild(track.cloneNode(true));
+    });
+  }
+
+  // Progress
+  function initProgress() {
+    const bar = document.getElementById('progress');
+    if (!bar) return;
+    window.addEventListener('scroll', () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = `scaleX(${clamp(window.scrollY/max,0,1)})`;
+    }, { passive: true });
+  }
+
+  initReveal();
+  initParallax();
+  initMagnetic();
+  initCursor();
+  initCounters();
+  initSplitText();
+  initMarquee();
+  initProgress();
+
+  // Show code badge on large screens
+  if (window.innerWidth > 1100) {
+    const badge = document.getElementById('code-badge');
+    if (badge) { badge.style.display = 'block'; }
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "name": "formia",
+  "version": "1.0.0",
+  "description": "FORMA — A design-system-first micro-framework. CSS primitives + motion JS layer + full design engine. No build step.",
+  "keywords": [
+    "css",
+    "design-system",
+    "animation",
+    "frontend",
+    "motion",
+    "theme",
+    "no-build",
+    "vanilla-js",
+    "forma"
+  ],
+  "main": "formia.js",
+  "files": [
+    "forma.css",
+    "forma.js",
+    "formia.js",
+    "forma-guide.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grxkun/formia.git"
+  },
+  "homepage": "https://github.com/grxkun/formia#readme",
+  "bugs": {
+    "url": "https://github.com/grxkun/forma-engine/issues"
+  },
+  "author": "grxkun",
+  "license": "MIT",
+  "scripts": {
+    "prepublishOnly": "echo 'Publishing forma-engine to npm...'"
+  }
+}

@@ -1,0 +1,8 @@
+# Exclude demo and dev files from npm package
+forma-demo.html
+index.html
+SKILL.md
+design-dna.md
+typography-system.md
+.gitignore
+README.md

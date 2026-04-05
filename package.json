@@ -1,5 +1,5 @@
 {
-  "name": "formia",
+  "name": "@grxkun/formia",
   "version": "1.0.0",
   "description": "Formia — One file. Design engine + motion layer. 11 themes, GSAP, Three.js, PWA. No build step.",
   "keywords": [

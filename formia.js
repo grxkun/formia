@@ -1,14 +1,29 @@
 /**
- * formia.js — Frontend Design Engine
- * v1.0 | The runtime that powers FORMA sites.
- * Handles: themes, accents, color mode, viewport preview,
- * studio panel, PWA, GSAP choreography, Three.js scene,
- * custom cursor, scroll progress.
+ * formia.js — Design Engine + Motion Layer
+ * v1.1 | One file. Everything.
+ *
+ * DESIGN ENGINE (themes, studio, PWA):
+ *   FORMIA.applyTheme('cobalt')
+ *   FORMIA.setAccent('#ff00ff')
+ *   FORMIA.setColorMode('dark')
+ *   FORMIA.setViewport('phone')
+ *
+ * MOTION LAYER (data attributes, zero-dependency):
+ *   data-reveal / data-reveal="left|right|scale|clip"
+ *   data-stagger          — stagger children on scroll reveal
+ *   data-parallax="0.3"   — parallax scroll (0–1 speed)
+ *   data-magnetic         — cursor-following element
+ *   data-cursor           — dynamic custom cursor (no #cur needed)
+ *   data-counter          — count up to data-value
+ *   data-split-text       — split words/chars for animation
+ *   data-progress         — scroll progress bar
+ *   data-gradient-mesh    — mouse-tracked CSS gradient
+ *
+ * EXPERIENCE (requires GSAP + Three.js when present):
+ *   GSAP choreography, Three.js hero scene, studio panel, PWA.
  *
  * Usage:
  *   <script src="formia.js" defer></script>
- *   — Requires GSAP + ScrollTrigger + Three.js loaded first.
- *   — All config via FORMIA.config or data attributes.
  */
 
 (function () {
@@ -29,6 +44,18 @@
     manufacturing: { th: 'manufacturing', ac: '#f5a623', a2: '#7a4e00', pc: 0xf5a623, label: 'Manufacturing' },
   };
 
+  // ── Motion Config ───────────────────────────────────────
+  const CONFIG = {
+    revealThreshold:    0.15,
+    revealRootMargin:   '0px 0px -60px 0px',
+    staggerDelay:       80,           // ms between staggered children
+    parallaxScaleFactor: 0.5,
+    magneticRadius:     120,          // px proximity to activate
+    magneticStrength:   0.35,         // 0–1
+    counterDuration:    1800,         // ms
+    cursorLag:          0.12,         // 0–1 lerp factor
+  };
+
   // ── State ───────────────────────────────────────────────
   let currentTheme = 'earth';
   let currentAccent = '#8fe05e';
@@ -42,12 +69,14 @@
   let _pm = null; // PointsMaterial
   let _rm = null; // RingMaterial
 
-  // Cursor state
-  let mx = 0, my = 0, cx = 0, cy = 0;
+  // Cursor state (shared)
+  let mouseX = 0, mouseY = 0, curX = 0, curY = 0;
 
   // ── Helpers ─────────────────────────────────────────────
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const clamp = (v, mn, mx) => Math.min(Math.max(v, mn), mx);
+  const lerp  = (a, b, t) => a + (b - a) * t;
 
   function updateBadge(id, text, cls) {
     const el = document.getElementById(id);
@@ -296,44 +325,242 @@
     }
   }
 
-  // ── 8. Custom Cursor ────────────────────────────────────
+  // ── 8. Cursor (unified) ────────────────────────────────
+  // Supports #cur element (formia-style) OR [data-cursor] attr (dynamic)
   function initCursor() {
-    const cur = document.getElementById('cur');
-    if (!cur) return;
     if (window.matchMedia('(pointer: coarse)').matches) return;
 
-    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
 
-    $$('a, button, .ts, .ptp').forEach(el => {
-      el.addEventListener('mouseenter', () => cur.classList.add('big'));
-      el.addEventListener('mouseleave', () => cur.classList.remove('big'));
+    // Formia-style: #cur element already in DOM
+    const cur = document.getElementById('cur');
+    if (cur) {
+      $$('a, button, .ts, .ptp').forEach(el => {
+        el.addEventListener('mouseenter', () => cur.classList.add('big'));
+        el.addEventListener('mouseleave', () => cur.classList.remove('big'));
+      });
+      (function loop() {
+        curX += (mouseX - curX) * 0.13;
+        curY += (mouseY - curY) * 0.13;
+        cur.style.left = curX + 'px';
+        cur.style.top  = curY + 'px';
+        requestAnimationFrame(loop);
+      })();
+      return;
+    }
+
+    // Forma-style: [data-cursor] attribute → create .cursor div dynamically
+    if (!$('[data-cursor]')) return;
+    const dynCur = document.createElement('div');
+    dynCur.className = 'cursor';
+    document.body.appendChild(dynCur);
+
+    $$('a, button, [data-magnetic], [role="button"]').forEach(el => {
+      el.addEventListener('mouseenter', () => dynCur.classList.add('hover'));
+      el.addEventListener('mouseleave', () => dynCur.classList.remove('hover'));
     });
 
-    (function loop() {
-      cx += (mx - cx) * 0.13;
-      cy += (my - cy) * 0.13;
-      cur.style.left = cx + 'px';
-      cur.style.top  = cy + 'px';
-      requestAnimationFrame(loop);
+    (function animateCursor() {
+      curX = lerp(curX, mouseX, CONFIG.cursorLag * 4);
+      curY = lerp(curY, mouseY, CONFIG.cursorLag * 4);
+      dynCur.style.left = curX + 'px';
+      dynCur.style.top  = curY + 'px';
+      requestAnimationFrame(animateCursor);
     })();
   }
 
-  // ── 9. Scroll Progress ──────────────────────────────────
+  // ── 9. Scroll Progress (unified) ────────────────────────
+  // Supports #prog element (formia-style) OR [data-progress] attr
   function initProgress() {
-    const prog = document.getElementById('prog');
+    const prog = document.getElementById('prog') || $('[data-progress]');
     if (!prog) return;
 
     window.addEventListener('scroll', () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      prog.style.transform = `scaleX(${Math.min(scrollY / max, 1)})`;
+      const val = clamp(window.scrollY / max, 0, 1);
+      prog.style.setProperty('--progress', val);
+      prog.style.transform = `scaleX(${val})`;
     }, { passive: true });
   }
 
-  // ── 10. Ticker Clone ────────────────────────────────────
+  // ── 10. Ticker / Marquee Clone ──────────────────────────
+  // Supports #tt ticker (formia-style) AND .marquee-track (forma-style)
   function initTicker() {
-    const track = document.getElementById('tt');
-    if (!track) return;
-    track.appendChild(track.cloneNode(true));
+    const tt = document.getElementById('tt');
+    if (tt) tt.appendChild(tt.cloneNode(true));
+
+    $$('.marquee-track').forEach(track => {
+      track.parentElement.appendChild(track.cloneNode(true));
+    });
+  }
+
+  // ── 11. Scroll Reveals ──────────────────────────────────
+  function initReveal() {
+    const els = $$('[data-reveal], [data-stagger]');
+    if (!els.length) return;
+
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+
+        if (el.hasAttribute('data-stagger')) {
+          [...el.children].forEach((child, i) => {
+            child.style.setProperty('--stagger-delay', `${i * CONFIG.staggerDelay}ms`);
+          });
+          requestAnimationFrame(() => el.classList.add('revealed'));
+        } else {
+          const delay = el.dataset.delay ? parseInt(el.dataset.delay) : 0;
+          setTimeout(() => el.classList.add('revealed'), delay);
+        }
+
+        obs.unobserve(el);
+      });
+    }, { threshold: CONFIG.revealThreshold, rootMargin: CONFIG.revealRootMargin });
+
+    els.forEach(el => obs.observe(el));
+  }
+
+  // ── 12. Parallax ────────────────────────────────────────
+  function initParallax() {
+    const els = $$('[data-parallax]');
+    if (!els.length) return;
+
+    function update() {
+      els.forEach(el => {
+        const speed = parseFloat(el.dataset.parallax) || 0.3;
+        const rect = el.getBoundingClientRect();
+        const relY = (rect.top + rect.height / 2 - window.innerHeight / 2) * speed * CONFIG.parallaxScaleFactor;
+        el.style.transform = `translateY(${relY}px)`;
+      });
+    }
+
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  }
+
+  // ── 13. Magnetic Elements ───────────────────────────────
+  function initMagnetic() {
+    const els = $$('[data-magnetic]');
+    if (!els.length) return;
+
+    const spring = getComputedStyle(document.documentElement).getPropertyValue('--ease-spring') || 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+
+    els.forEach(el => {
+      el.style.transition = `transform 0.4s ${spring}`;
+
+      el.addEventListener('mousemove', e => {
+        const rect = el.getBoundingClientRect();
+        const dx = e.clientX - (rect.left + rect.width / 2);
+        const dy = e.clientY - (rect.top + rect.height / 2);
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < CONFIG.magneticRadius) {
+          const strength = (1 - dist / CONFIG.magneticRadius) * CONFIG.magneticStrength;
+          el.style.transform = `translate(${dx * strength}px, ${dy * strength}px)`;
+        }
+      });
+
+      el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+    });
+  }
+
+  // ── 14. Number Counters ─────────────────────────────────
+  // Supports data-value (native, no deps) and data-val (GSAP, handled in initGSAP)
+  function initCounters() {
+    const els = $$('[data-counter][data-value]');
+    if (!els.length) return;
+
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target  = parseFloat(el.dataset.value || el.textContent);
+        const suffix   = el.dataset.suffix   || '';
+        const prefix   = el.dataset.prefix   || '';
+        const decimals = el.dataset.decimals ? parseInt(el.dataset.decimals) : 0;
+        const start    = performance.now();
+
+        function update(now) {
+          const elapsed  = now - start;
+          const progress = clamp(elapsed / CONFIG.counterDuration, 0, 1);
+          const eased    = 1 - Math.pow(1 - progress, 3);
+          el.textContent = prefix + (target * eased).toFixed(decimals) + suffix;
+          if (progress < 1) requestAnimationFrame(update);
+        }
+
+        requestAnimationFrame(update);
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+
+    els.forEach(el => obs.observe(el));
+  }
+
+  // ── 15. Split Text ──────────────────────────────────────
+  function initSplitText() {
+    const els = $$('[data-split-text]');
+    if (!els.length) return;
+
+    els.forEach(el => {
+      const mode = el.dataset.splitText || 'words';
+      const text = el.textContent;
+
+      if (mode === 'words') {
+        el.innerHTML = text.split(' ').map(word =>
+          `<span class="split-word" style="display:inline-block;overflow:hidden;vertical-align:bottom;">` +
+          `<span style="display:inline-block;transform:translateY(110%);transition:transform 0.7s cubic-bezier(0.16,1,0.3,1);">${word}</span>` +
+          `</span>`
+        ).join(' ');
+      } else {
+        el.innerHTML = text.split('').map(char =>
+          char === ' ' ? ' ' :
+          `<span class="split-char" style="display:inline-block;overflow:hidden;">` +
+          `<span style="display:inline-block;transform:translateY(110%);transition:transform 0.5s cubic-bezier(0.16,1,0.3,1);">${char}</span>` +
+          `</span>`
+        ).join('');
+      }
+
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const spans = [...el.querySelectorAll('.split-word > span, .split-char > span')];
+          spans.forEach((s, i) => {
+            setTimeout(() => { s.style.transform = 'translateY(0)'; }, i * (mode === 'words' ? 60 : 25));
+          });
+          obs.unobserve(el);
+        });
+      }, { threshold: 0.3 });
+
+      obs.observe(el);
+    });
+  }
+
+  // ── 16. Smooth Scroll ───────────────────────────────────
+  function initSmoothScroll() {
+    $$('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', e => {
+        const target = $(link.getAttribute('href'));
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+
+  // ── 17. Gradient Mesh Cursor Tracking ───────────────────
+  function initGradientMesh() {
+    const meshEls = $$('[data-gradient-mesh]');
+    if (!meshEls.length) return;
+
+    document.addEventListener('mousemove', e => {
+      const x = (e.clientX / window.innerWidth  * 100).toFixed(1);
+      const y = (e.clientY / window.innerHeight * 100).toFixed(1);
+      meshEls.forEach(el => {
+        el.style.setProperty('--mouse-x', x + '%');
+        el.style.setProperty('--mouse-y', y + '%');
+      });
+    }, { passive: true });
   }
 
   // ── 11. GSAP Choreography ───────────────────────────────
@@ -458,14 +685,26 @@
 
   // ── Init ────────────────────────────────────────────────
   function init() {
+    // Design engine
+    initStudio();
+
+    // Motion layer (zero-dependency)
+    initReveal();
+    initParallax();
+    initMagnetic();
+    initCounters();
+    initSplitText();
+    initSmoothScroll();
+    initGradientMesh();
+
+    // Experience
     initCursor();
     initProgress();
     initTicker();
-    initStudio();
     initGSAP();
     initThreeScene();
 
-    // Apply theme from URL ?theme=cobalt
+    // URL theme override ?theme=cobalt
     const urlTheme = new URLSearchParams(location.search).get('theme');
     if (urlTheme && THEMES[urlTheme]) applyTheme(urlTheme);
 
@@ -483,6 +722,7 @@
 
   // ── Public API ──────────────────────────────────────────
   window.FORMIA = {
+    // Design engine
     applyTheme,
     setAccent,
     setColorMode,
@@ -491,7 +731,10 @@
     themes: THEMES,
     get currentTheme() { return currentTheme; },
     get currentAccent() { return currentAccent; },
-    get colorMode() { return colorMode; },
+    get colorMode()     { return colorMode; },
+    // Motion layer
+    config: CONFIG,
+    reinit: init,
   };
 
 })();

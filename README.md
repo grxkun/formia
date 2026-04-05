@@ -3,10 +3,9 @@
 > A design-system-first micro-framework. Drop in and build differently.
 
 **forma.css** — Layout primitives, design tokens, fluid type scale, motion utilities.  
-**forma.js** — Scroll reveals, parallax, magnetic elements, custom cursor, counters, split text.  
-**formia.js** — Full design runtime: 11 themes, accent system, dark/light mode, viewport preview, GSAP choreography, Three.js hero scene, PWA manager.
+**formia.js** — Everything else: scroll reveals, parallax, magnetic, cursor, counters, split text, 11 themes, accent system, dark/light mode, viewport preview, GSAP choreography, Three.js hero scene, PWA manager.
 
-No build step. No dependencies (for forma.css + forma.js). Zero config.
+No build step. Zero config.
 
 ---
 
@@ -20,9 +19,11 @@ Or drop files directly into your project:
 
 ```html
 <link rel="stylesheet" href="forma.css">
-<script src="forma.js" defer></script>
 
-<!-- Full design engine (requires GSAP + Three.js) -->
+<!-- Motion only (no GSAP/Three.js needed) -->
+<script src="formia.js" defer></script>
+
+<!-- Full engine (themes, Three.js, GSAP) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -65,7 +66,7 @@ Override the tokens in your project:
 
 ---
 
-## forma.js — Motion Attributes
+## Motion Attributes (data-*)
 
 All features are driven by HTML `data-` attributes.
 
@@ -161,8 +162,7 @@ Press **T** to toggle the studio panel from any page.
 | File | Size | Purpose |
 |------|------|---------|
 | `forma.css` | ~8KB | Design tokens + layout primitives |
-| `forma.js` | ~5KB | Motion layer (zero dependencies) |
-| `formia.js` | ~10KB | Full design runtime |
+| `formia.js` | ~15KB | Design engine + motion layer (one file) |
 
 ---
 
